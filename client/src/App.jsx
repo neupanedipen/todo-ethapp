@@ -1,6 +1,7 @@
 import { ethers } from 'ethers'
 import { useEffect, useState } from 'react';
 import { contractABI, contractAddress } from './utils/constants'
+import "./App.css"
 
 const { ethereum } = window
 
@@ -23,7 +24,7 @@ function App() {
     try {
       const { ethereum } = window;
       if (!ethereum) {
-        alert("Mmask not detected");
+        alert("Metamask not detected");
         return;
       }
 
@@ -48,6 +49,7 @@ function App() {
         console.log("Adding todos...wait", addTxn.hash);
         await addTxn.wait();
         console.log("Adding complete", addTxn.hash);
+        window.location.reload()
       } else {
         console.log("Failed to connect to metamask");
       }
@@ -76,8 +78,11 @@ function App() {
       if(ethereum){
         const todosContract = createEthereumContract();
         const todos = await todosContract.toogleCompleted(id);
+        console.log(todos);
+        todos.wait()
         // setAllTodos(todos)
         console.log(todos);
+        window.location.reload()
       }else{
         console.log("Metamask wallet not found");
       }
@@ -98,28 +103,34 @@ function App() {
   useEffect(() => {
     fetchTodos()
   }, [])
+
   return (
     <div className="App">
-      <button onClick={connectWallet}>Connect Wallet</button>
-      <h2>Todos</h2>
+      <div className="navbar">
+        <h2>ETH TODO APP</h2>
+      </div>
+      {currentAccount ? <h3 style={{marginBottom: '1rem'}}>Connected Wallet: {currentAccount}</h3> : <button className='connect-wallet' onClick={connectWallet}>Connect Wallet</button> }
       <form >
         <input type="text" value={todos} onChange={e => setTodos(e.target.value)} />
         <button type='submit' onClick={handleSubmit}>Add</button>
       </form>
+      <div className="display-todos">
+      <h2>All Todos</h2>
       {
         (allTodos.length > 0) && (
          allTodos.map(todo => {
           return (
-            <div key={todo.id}>
-              <h2>{todo.task}</h2>
+            <div key={todo.id} className='todo-single'>
+              <h2 className={todo.completed ? 'completed' : 'incomplete'}>{todo.task}</h2>
               {
-                todo.completed ? <button onClick={() => handleToggle(todo.id)}>Mark incomplete</button> : <button onClick={() => handleToggle(todo.id)}>Mark completed</button>
+                todo.completed ? <button className='status complete' onClick={() => handleToggle(todo.id)}>Mark incomplete</button> : <button className='status incomplete' onClick={() => handleToggle(todo.id)}>Mark completed</button>
               }
             </div>
           )
          })
         )
       }
+      </div>
     </div>
   )
 }
